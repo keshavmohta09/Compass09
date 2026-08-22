@@ -1,0 +1,8 @@
+{
+  "name": "Compass09",
+  "description": "A modern, 100% offline, privacy-first Compass with real-time sensor tracking, Vastu direction insights, calibration alerts, and haptic feedback.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Compass09</string>
+    <string name="heading_degrees_format">%1$d°</string>
+    <string name="magnetic_field_format">%1$.1f µT</string>
+    <string name="accuracy_high">Accuracy: High</string>
+    <string name="accuracy_medium">Accuracy: Medium</string>
+    <string name="accuracy_low">Accuracy: Low</string>
+    <string name="accuracy_unreliable">Accuracy: Unreliable</string>
+    <string name="calibration_tip">Move your phone in a figure-8 motion to calibrate the compass.</string>
+    <string name="tab_compass">Compass</string>
+    <string name="tab_vastu">Vastu Guide</string>
+    <string name="tab_settings">Settings</string>
+</resources>

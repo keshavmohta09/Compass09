@@ -1,0 +1,144 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type (debug or all)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - 'debug'
+          - 'all'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: 📱 Build & Package APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐘 Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: 🔑 Setup Android Keystore
+        run: |
+          echo "Preparing Android signing keys..."
+          if [ -f "debug.keystore.base64" ]; then
+            echo "Decoding debug.keystore from base64..."
+            base64 -d debug.keystore.base64 > debug.keystore
+          elif [ ! -f "debug.keystore" ]; then
+            echo "Generating fresh debug.keystore..."
+            keytool -genkey -v \
+              -keystore debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          ls -la debug.keystore
+
+      - name: 🔧 Grant Execute Permission for Gradlew
+        run: chmod +x ./gradlew
+
+      - name: 🧪 Run Unit & Robolectric Tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: 🔨 Build Debug APK (Ready for Installation)
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: 📦 Prepare Output Artifacts
+        run: |
+          mkdir -p build-output
+          
+          # Find and copy Debug APK
+          DEBUG_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -f "$DEBUG_APK" ]; then
+            cp "$DEBUG_APK" build-output/Compass09-v1.0-installable.apk
+            cp "$DEBUG_APK" build-output/Compass09-debug.apk
+            echo "Copied $DEBUG_APK to build-output/Compass09-v1.0-installable.apk"
+          else
+            echo "Error: No debug APK found!"
+            exit 1
+          fi
+          
+          # Generate SHA256 checksums
+          cd build-output
+          sha256sum *.apk > checksums.sha256
+          cd ..
+          
+          echo "=== Artifacts ready for download ==="
+          ls -la build-output/
+
+      - name: 🚀 Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Compass09-Android-App-APK
+          path: build-output/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: 🏷️ Upload to GitHub Release (on Tags / Releases)
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build-output/Compass09-v1.0-installable.apk
+            build-output/checksums.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📋 Generate GitHub Job Summary
+        run: |
+          APK_SIZE=$(ls -lh build-output/Compass09-v1.0-installable.apk | awk '{print $5}')
+          SHA_HASH=$(sha256sum build-output/Compass09-v1.0-installable.apk | awk '{print $1}')
+          
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          # 🧭 Compass09 Android Build Succeeded! 🎉
+
+          The installable APK has been compiled and packaged. Anyone can install and run this on an Android smartphone.
+
+          ### 📦 Build Artifact Summary
+          - **File Name:** \`Compass09-v1.0-installable.apk\`
+          - **File Size:** \`$APK_SIZE\`
+          - **SHA-256 Checksum:** \`$SHA_HASH\`
+          - **Compatibility:** Android 7.0+ (API 24 to 36)
+
+          ---
+
+          ### 📲 How to Install on Your Android Phone:
+          1. **Download the APK**: Download \`Compass09-v1.0-installable.apk\` from the **Artifacts** section at the top of this GitHub Actions run summary (or from the Releases page).
+          2. **Transfer or Open on Phone**: Send the APK to your phone via USB, Google Drive, Telegram/WhatsApp, or direct browser download.
+          3. **Allow Installation**: Tap the downloaded file. If prompted with *"For your security, your phone is not allowed to install unknown apps from this source"*, tap **Settings** and toggle **"Allow from this source"**.
+          4. **Tap Install**: Complete installation and open **Compass09**!
+          EOF
