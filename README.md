@@ -21,11 +21,11 @@
 
 | Precision Compass Dial | Live Vastu Insight Card | Sensor Calibration |
 | :---: | :---: | :---: |
-| <img src="screenshots/compass_dial.png" alt="Compass Dial" width="260"/> | <img src="screenshots/vastu_card.png" alt="Vastu Card" width="260"/> | <img src="screenshots/calibration_dialog.png" alt="Calibration Dialog" width="260"/> |
+| <img src="screenshots/compass_dial.jpg" alt="Compass Dial" width="260"/> | <img src="screenshots/vastu_card.jpg" alt="Vastu Card" width="260"/> | <img src="screenshots/calibration_dialog.jpg" alt="Calibration Dialog" width="260"/> |
 
 | Direction Chips Selector |
 | :---: |
-| <img src="screenshots/direction_chips.png" alt="Direction Chips" width="400"/> |
+| <img src="screenshots/direction_chips.jpg" alt="Direction Chips" width="400"/> |
 
 ---
 
