@@ -2,6 +2,13 @@
 
 > **A modern, 100% offline, privacy-first Android Compass featuring real-time sensor tracking, architectural Vastu Shastra direction insights, high-contrast Obsidian & Emerald aesthetics, interactive calibration diagnostics, and haptic feedback.**
 
+
+> <p align="center">
+  <a href="./latest/Compass09.apk">
+    <img src="https://img.shields.io/badge/INSTALL_ON_ANDROID-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Install on Android"/>
+  </a>
+</p>
+
 ---
 
 ## 🌟 Key Highlights
