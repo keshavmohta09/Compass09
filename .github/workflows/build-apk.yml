@@ -105,6 +105,28 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
+      - name: 📥 Commit Latest APK to Repository
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Create folder in repository for latest APK
+          mkdir -p latest
+
+          # Copy latest build
+          cp build-output/Compass09-v1.0-installable.apk latest/Compass09.apk
+
+          # Commit only if APK changed
+          git add latest/Compass09.apk
+
+          if git diff --cached --quiet; then
+            echo "No APK changes to commit."
+          else
+            git commit -m "chore: update latest APK [skip ci]"
+            git push
+          fi
+
       - name: 🏷️ Upload to GitHub Release (on Tags / Releases)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: softprops/action-gh-release@v2
